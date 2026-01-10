@@ -1,33 +1,57 @@
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CentralServer {
 
   private static final int PORT = 9999;
-  private ArrayList<ClientHandler> clients = new ArrayList<>();
+
+  private static List<Business> businessList = new ArrayList<>();
+
   public static void main(String[] args) {
-    System.out.println("Starting Central Server...");
+    System.out.println("Central Server is running on port " + PORT + "...");
+
     try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-      System.out.println("Central Server is running on port " + PORT);
       while (true) {
-        try {
-          Socket clientSocket = serverSocket.accept();
-          System.out.println(
-            "New client connected: " + clientSocket.getInetAddress()
-          );
-          Thread clientThread = new Thread(new ClientHandler(clientSocket));
-          clientThread.start();
-        } catch (IOException e) {
-          System.err.println(
-            "Error accepting client connection: " + e.getMessage()
-          );
-          if (serverSocket.isClosed()) break;
-        }
+        Socket clientSocket = serverSocket.accept();
+
+        new ClientHandler(clientSocket).start();
       }
     } catch (IOException e) {
-      System.err.println("Server exception: " + e.getMessage());
       e.printStackTrace();
     }
+  }
+
+  public static synchronized String processRequest(
+    String name,
+    String id,
+    int itemType,
+    int quantity
+  ) {
+    Business existingBusiness = null;
+
+    for (Business b : businessList) {
+      if (b.getId().equals(id)) {
+        existingBusiness = b;
+        break;
+      }
+    }
+
+    if (existingBusiness != null) {
+      if (!existingBusiness.getName().equals(name)) {
+        return "201";
+      }
+      existingBusiness.addQuantity(itemType, quantity);
+      System.out.println("Updated: " + existingBusiness);
+    } else {
+      Business newBusiness = new Business(name, id);
+      newBusiness.addQuantity(itemType, quantity);
+      businessList.add(newBusiness);
+      System.out.println("Created: " + newBusiness);
+    }
+
+    return "100";
   }
 }
