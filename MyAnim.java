@@ -8,14 +8,10 @@ import java.io.IOException;
 import java.util.Random;
 import javax.swing.*;
 
-public class canvasLetters extends JPanel implements ActionListener {
+public class MyAnim extends JPanel implements ActionListener {
 
-  // פוליגונים ל-4 האותיות
   private Polygon polyM, polyE, polyL, polyA;
 
-  // --- משתני אנימציה ---
-
-  // מיקומים התחלתיים (נפזר אותם על המסך)
   private int xM = 50,
     yM = 50;
   private int xE = 250,
@@ -25,8 +21,7 @@ public class canvasLetters extends JPanel implements ActionListener {
   private int xA = 250,
     yA = 250;
 
-  // מהירויות תזוזה לכל אות
-  private int dxM = 2,
+  private int dxM = -2,
     dyM = 3;
   private int dxE = -2,
     dyE = 2;
@@ -35,15 +30,12 @@ public class canvasLetters extends JPanel implements ActionListener {
   private int dxA = -3,
     dyA = -3;
 
-  // זווית סיבוב (עבור M ו-A)
   private double angleM = 0;
   private double angleA = 0;
 
-  // סקיילינג (עבור E)
   private double scaleE = 1.0;
   private boolean growingE = true;
 
-  // צבעים
   private Color cM = Color.BLUE;
   private Color cE = Color.RED;
   private Color cL = Color.GREEN;
@@ -51,8 +43,7 @@ public class canvasLetters extends JPanel implements ActionListener {
 
   private Random random = new Random();
 
-  public canvasLetters() {
-    // טעינת 4 הקבצים
+  public MyAnim() {
     polyM = loadPolygon("M.txt");
     polyE = loadPolygon("E.txt");
     polyL = loadPolygon("L.txt");
@@ -79,7 +70,7 @@ public class canvasLetters extends JPanel implements ActionListener {
       System.err.println("Error reading " + filename);
       p.addPoint(0, 0);
       p.addPoint(50, 50);
-      p.addPoint(0, 50); // משולש חירום
+      p.addPoint(0, 50);
     }
     return p;
   }
@@ -93,20 +84,15 @@ public class canvasLetters extends JPanel implements ActionListener {
       RenderingHints.VALUE_ANTIALIAS_ON
     );
 
-    // === ציור M (סיבוב) ===
     drawRotated(g2d, polyM, xM, yM, cM, angleM);
 
-    // === ציור E (שינוי גודל) ===
     drawScaled(g2d, polyE, xE, yE, cE, scaleE);
 
-    // === ציור L (תזוזה רגילה) ===
-    drawRotated(g2d, polyL, xL, yL, cL, 0); // זווית 0 = ללא סיבוב
+    drawRotated(g2d, polyL, xL, yL, cL, 0);
 
-    // === ציור A (סיבוב הפוך) ===
     drawRotated(g2d, polyA, xA, yA, cA, angleA);
   }
 
-  // פונקציית עזר לציור עם סיבוב
   private void drawRotated(
     Graphics2D g2,
     Polygon p,
@@ -126,7 +112,6 @@ public class canvasLetters extends JPanel implements ActionListener {
     g2.setTransform(old);
   }
 
-  // פונקציית עזר לציור עם שינוי גודל
   private void drawScaled(
     Graphics2D g2,
     Polygon p,
@@ -148,7 +133,6 @@ public class canvasLetters extends JPanel implements ActionListener {
     int w = getWidth();
     int h = getHeight();
 
-    // 1. עדכון מיקומים (לכל ה-4)
     xM += dxM;
     yM += dyM;
     xE += dxE;
@@ -158,7 +142,6 @@ public class canvasLetters extends JPanel implements ActionListener {
     xA += dxA;
     yA += dyA;
 
-    // 2. בדיקת קירות ושינוי צבע (לוגיקה זהה לכולם)
     if (checkWall(xM, yM, polyM, 1.0, w, h)) {
       dxM = -dxM;
       cM = rndColor();
@@ -195,11 +178,9 @@ public class canvasLetters extends JPanel implements ActionListener {
       cA = rndColor();
     }
 
-    // 3. עדכון אנימציות פנימיות
-    angleM += 2; // M מסתובבת ימינה
-    angleA -= 2; // A מסתובבת שמאלה
+    angleM += 2;
+    angleA -= 2;
 
-    // E פועמת (גדלה/קטנה)
     if (growingE) {
       scaleE += 0.01;
       if (scaleE >= 1.3) growingE = false;
@@ -211,7 +192,6 @@ public class canvasLetters extends JPanel implements ActionListener {
     repaint();
   }
 
-  // עזרים לבדיקת קירות
   private boolean checkWall(int x, int y, Polygon p, double s, int w, int h) {
     return (x < 0 || x + p.getBounds().width * s > w);
   }
@@ -230,7 +210,7 @@ public class canvasLetters extends JPanel implements ActionListener {
 
   public static void main(String[] args) {
     JFrame f = new JFrame("M E L A - Animation");
-    f.add(new canvasLetters());
+    f.add(new MyAnim());
     f.setSize(800, 600);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.setLocationRelativeTo(null);
